@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
 import com.example.gamenumbercourse.R
 import com.example.gamenumbercourse.databinding.FragmentGameBinding
 import com.example.gamenumbercourse.databinding.FragmentGameFinishedBinding
@@ -13,12 +14,12 @@ import com.example.gamenumbercourse.domain.entities.GameSettings
 import com.example.gamenumbercourse.domain.entities.Level
 
 
-@Suppress("DEPRECATION")
 class GameFragment : Fragment() {
     private var _binding : FragmentGameBinding? = null
     private val binding : FragmentGameBinding
         get() = _binding ?: throw RuntimeException("FragmentGameBinding == null")
     private lateinit var level : Level
+    private lateinit var viewModel : GameViewModel
 
     override fun onCreate(savedInstanceState : Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,12 +30,14 @@ class GameFragment : Fragment() {
         inflater : LayoutInflater, container : ViewGroup?,
         savedInstanceState : Bundle?
     ) : View {
+
         _binding = FragmentGameBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view : View, savedInstanceState : Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(this)[GameViewModel::class.java]
         binding.tvMainNumber.setOnClickListener {
             launchGameFinishedFragment(
                 GameResult(
@@ -56,7 +59,7 @@ class GameFragment : Fragment() {
 
 
     private fun parseArgs() {
-        level = requireArguments().getSerializable(KEY_LEVEL) as Level
+        requireArguments().getParcelable<Level>(KEY_LEVEL)?.let { level = it }
     }
 
     override fun onDestroyView() {
@@ -65,14 +68,12 @@ class GameFragment : Fragment() {
     }
 
     companion object {
-
         const val NAME = "GameFragment"
         private const val KEY_LEVEL = "level"
-
         fun newInstance(level : Level) : GameFragment {
             return GameFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(KEY_LEVEL, level)
+                    putParcelable(KEY_LEVEL, level)
                 }
             }
         }
