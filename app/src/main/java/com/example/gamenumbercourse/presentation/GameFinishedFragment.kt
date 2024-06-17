@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.FragmentManager
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.gamenumbercourse.R
 import com.example.gamenumbercourse.databinding.FragmentGameFinishedBinding
 import com.example.gamenumbercourse.domain.entities.GameResult
@@ -15,14 +17,12 @@ import com.example.gamenumbercourse.domain.entities.GameResult
 
 class GameFinishedFragment : Fragment() {
 
+    private val args by navArgs<GameFinishedFragmentArgs>()
     private var _binding : FragmentGameFinishedBinding? = null
     private val binding : FragmentGameFinishedBinding
         get() = _binding ?: throw RuntimeException("FragmentGameFinishedBinding? == null")
-    private lateinit var gameResult : GameResult
-
-    override fun onCreate(savedInstanceState : Bundle?) {
-        super.onCreate(savedInstanceState)
-        parseGameResult()
+    private val gameResult : GameResult by lazy {
+        args.gameResult
     }
 
     override fun onCreateView(
@@ -35,12 +35,6 @@ class GameFinishedFragment : Fragment() {
 
     override fun onViewCreated(view : View, savedInstanceState : Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                retryGame()
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
         binding.buttonRetry.setOnClickListener {
             retryGame()
         }
@@ -71,40 +65,21 @@ class GameFinishedFragment : Fragment() {
         val resultImage = if (gameResult.winner) R.drawable.ic_smile else R.drawable.ic_sad
         binding.emojiResult.setImageResource(resultImage)
     }
+
     private fun getPercentOfRightAnswers() = with(gameResult) {
-        if(countOfQuestions == 0) {
+        if (countOfQuestions == 0) {
             0
         } else {
             ((countOfRightAnswers / countOfQuestions.toDouble()) * 100).toInt()
         }
     }
 
-    private fun parseGameResult() {
-        requireArguments().getParcelable<GameResult>(KEY_GAME_RESULT)?.let { gameResult = it }
-    }
-
     private fun retryGame() {
-        requireActivity().supportFragmentManager.popBackStack(
-            GameFragment.NAME,
-            FragmentManager.POP_BACK_STACK_INCLUSIVE
-        )
+        findNavController().popBackStack()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    companion object {
-        private const val KEY_GAME_RESULT = "game_result"
-
-        fun newInstance(gameResult : GameResult) : GameFinishedFragment {
-            return GameFinishedFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelable(KEY_GAME_RESULT, gameResult)
-                }
-            }
-        }
-
     }
 }
