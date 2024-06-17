@@ -31,7 +31,7 @@ class WelcomeFragment : Fragment() {
         binding.buttonForDestinationAnotherScreen.setOnClickListener {
             launchChooseLevelFragment()
         }
-
+        binding.imageView.setImageResource(R.drawable.ic_brain)
     }
 
     private fun launchChooseLevelFragment() {

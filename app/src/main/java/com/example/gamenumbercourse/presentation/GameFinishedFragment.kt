@@ -1,5 +1,6 @@
 package com.example.gamenumbercourse.presentation
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -39,9 +40,42 @@ class GameFinishedFragment : Fragment() {
                 retryGame()
             }
         }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,callback)
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
         binding.buttonRetry.setOnClickListener {
             retryGame()
+        }
+        bindViews()
+    }
+
+    @SuppressLint("SetTextI18n", "StringFormatMatches")
+    private fun bindViews() {
+        getSmileResId()
+        binding.tvScoreAnswers.text =
+            String.format(getString(R.string.score_answers), gameResult.countOfRightAnswers)
+        binding.tvRequiredAnswers.text = String.format(
+            getString(R.string.required_score),
+            gameResult.gameSettings.minCountOfRightAnswers
+        )
+        binding.tvRequiredPercentage.text = String.format(
+            getString(R.string.required_percentage),
+            gameResult.gameSettings.minPercentOfRightAnswers
+        )
+
+        binding.tvScorePercentage.text = String.format(
+            getString(R.string.score_percentage),
+            getPercentOfRightAnswers()
+        )
+    }
+
+    private fun getSmileResId() {
+        val resultImage = if (gameResult.winner) R.drawable.ic_smile else R.drawable.ic_sad
+        binding.emojiResult.setImageResource(resultImage)
+    }
+    private fun getPercentOfRightAnswers() = with(gameResult) {
+        if(countOfQuestions == 0) {
+            0
+        } else {
+            ((countOfRightAnswers / countOfQuestions.toDouble()) * 100).toInt()
         }
     }
 
@@ -50,7 +84,10 @@ class GameFinishedFragment : Fragment() {
     }
 
     private fun retryGame() {
-        requireActivity().supportFragmentManager.popBackStack(GameFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        requireActivity().supportFragmentManager.popBackStack(
+            GameFragment.NAME,
+            FragmentManager.POP_BACK_STACK_INCLUSIVE
+        )
     }
 
     override fun onDestroyView() {
